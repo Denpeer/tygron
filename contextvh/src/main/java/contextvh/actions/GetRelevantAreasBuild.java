@@ -80,7 +80,7 @@ public class GetRelevantAreasBuild implements RelevantAreasAction {
 				}
 				MultiPolygon mp = JTSUtils.createMP(geom);
 				constructableLand = JTSUtils.createMP(constructableLand.difference(mp));
-				gardenGeom = gardenGeom.intersection(geom);
+				gardenGeom = gardenGeom.difference(geom);
 				MultiPolygon gardenMp = JTSUtils.createMP(gardenGeom);
 				try {
 					results.add(GetRelevantAreas.convertMPtoPL(mp));

@@ -33,7 +33,8 @@ public class ContextJ2Building extends tygronenv.translators.J2Building {
 				new Numeral(building.getFunctionID()),
 				new Numeral(building.getFloors()),
 				translator.translate2Parameter(multiPolygon)[0],
-				new Numeral(multiPolygon.getArea())
+				new Numeral(multiPolygon.getArea()),
+				new Identifier(building.getTimeState().name())
 			)
 		};
 	}
