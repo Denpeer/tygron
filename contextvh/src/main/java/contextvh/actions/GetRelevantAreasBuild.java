@@ -65,31 +65,35 @@ public class GetRelevantAreasBuild implements RelevantAreasAction {
 		int numPolys = 0;
 		final ParameterList results = new ParameterList();
 		final ParameterList resultGardens = new ParameterList();
-		for (Polygon poly: JTSUtils.getPolygons(constructableLand)) {
+		outerloop: for (Polygon poly: JTSUtils.getPolygons(constructableLand)) {
 			final List<Polygon> listPolygon = JTSUtils.getTriangles(poly, minArea);
 			for (Geometry geom : listPolygon) {
-				if (numPolys > maxPolys) {
-					break;
-				}
-				geom = createNewPolygon(geom);
-				geom = geom.intersection(constructableLand);
-				Geometry gardenGeom = geom;
-				geom = geom.buffer(bufferDown).buffer(bufferUp);
-				if (geom.getArea() < minArea / 2 || geom.getArea() > maxArea) {
-					continue;
-				}
-				MultiPolygon mp = JTSUtils.createMP(geom);
-				constructableLand = JTSUtils.createMP(constructableLand.difference(mp));
-				gardenGeom = gardenGeom.difference(geom);
-				MultiPolygon gardenMp = JTSUtils.createMP(gardenGeom);
 				try {
-					results.add(GetRelevantAreas.convertMPtoPL(mp));
-					resultGardens.add(GetRelevantAreas.convertMPtoPL(gardenMp));
-				} catch (TranslationException e) {
-					TLogger.exception(e);
-					continue;
+					geom = createNewPolygon(geom);
+					geom = geom.intersection(constructableLand);
+					Geometry gardenGeom = geom;
+					geom = geom.buffer(bufferDown).buffer(bufferUp);
+					if (geom.getArea() < minArea / 2 || geom.getArea() > maxArea) {
+						continue;
+					}
+					MultiPolygon mp = JTSUtils.createMP(geom);
+					constructableLand = JTSUtils.createMP(constructableLand.difference(mp));
+					gardenGeom = gardenGeom.difference(geom);
+					MultiPolygon gardenMp = JTSUtils.createMP(gardenGeom);
+
+					Parameter buildingParam = GetRelevantAreas.convertMPtoPL(mp),
+							gardenParam = GetRelevantAreas.convertMPtoPL(gardenMp);
+					numPolys++;
+					results.add(buildingParam);
+					resultGardens.add(gardenParam);
+				} catch (Exception exp) {
+					TLogger.severe("An exception was thrown while handling a multipolygon:");
+					TLogger.severe(geom.toString());
+					TLogger.exception(exp);
 				}
-				numPolys++;
+				if (numPolys > maxPolys) {
+					break outerloop;
+				}
 			}
 		}
 		createdPercept.addParameter(results);
